@@ -1,0 +1,20 @@
+{
+  "name": "SyncBookmarks",
+  "version": "0.1",
+  "description": "Synchronize bookmarks between browsers",
+  "manifest_version": 2,
+  "icons": {
+    "16": "images/bookmarks16.png",
+    "32": "images/bookmarks32.png",
+    "48": "images/bookmarks48.png",
+    "128": "images/bookmarks48.png"
+  },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": "images/bookmarks48.png"
+  },
+  "permissions": ["bookmarks"],
+  "background": {
+    "scripts": ["js/background.js"]
+  }
+}
