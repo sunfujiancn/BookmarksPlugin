@@ -13,7 +13,10 @@
     "default_popup": "popup.html",
     "default_icon": "images/bookmarks48.png"
   },
-  "permissions": ["bookmarks"],
+  "permissions": [
+    "bookmarks",
+    "http://localhost:8080/"
+  ],
   "background": {
     "scripts": ["js/background.js"]
   }
