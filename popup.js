@@ -1,9 +1,5 @@
-$(function($){
-  $("#syncBK").click(function(){
-    chrome.bookmarks.getTree(function(results){
-      $.post("http://localhost:8080/save", {"params": results[0].children}, function (data) {
-        console.log(JSON.stringify(results));
-      });
-    });
+function pushMarks(param, callback) {
+  $.post("http://localhost:8080/push", {}, function(data){
+    callback && callback(data);
   });
-});
+}
