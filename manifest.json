@@ -9,15 +9,23 @@
     "48": "images/bookmarks48.png",
     "128": "images/bookmarks48.png"
   },
+  "permissions": [
+    "tabs",
+    "bookmarks",
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": ["js/jquery.min.js", "js/background.js"]
+  },
   "browser_action": {
     "default_popup": "popup.html",
     "default_icon": "images/bookmarks48.png"
   },
-  "permissions": [
-    "bookmarks",
-    "http://localhost:8080/"
-  ],
-  "background": {
-    "scripts": ["js/jquery.min.js", "js/background.js"]
-  }
+  "content_scripts": [
+    {
+      "matches": ["https://*/*"],
+      "js": ["js/jquery.min.js", "js/contentscript.js"],
+      "run_at": "document_end"
+    }
+  ]
 }

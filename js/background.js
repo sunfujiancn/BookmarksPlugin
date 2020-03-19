@@ -1,53 +1,120 @@
-// function getData(urlPath, params) {
-//   $.get("http://localhost:8080/"+urlPath, params, function(data){
-//     console.log(data);
-//   });
-// }
+var BASE_URL = "http://localhost:8080";
 
-function pushData(urlPath, params) {
-  console.log(JSON.stringify(params));
-  // if(urlPath === "delete") {
-  //   params = {"params": JSON.stringify(params)};
-  // }
-  $.ajax({
-    "url": "http://localhost:8080/"+urlPath,
-    "contentType": "application/json",
-    "type": "POST",
-    "success": function(data){
+function addBookmark(bookmark) {
+  console.log(JSON.stringify(bookmark));
+  $.post({
+    url: BASE_URL + "/add",
+    contentType: "application/json",
+    type: "POST",
+    data: JSON.stringify(bookmark),
+    success: function(data){
       console.log(data);
     }
   });
-  // $.post("http://localhost:8080/"+urlPath, params, function(data){
-  //   console.log(data);
-  // });
 }
-//
-// function putData(urlPath, params) {
-//   $.post("http://localhost:8080/"+urlPath, params, function(data){
-//     console.log(data);
-//   });
-// }
-//
-// function deleteData(urlPath, params) {
-//   $.post("http://localhost:8080/"+urlPath, params, function(data){
-//     console.log(data);
-//   });
+
+function delBookmark(id) {
+  console.log("Del id:"+id);
+  $.get(BASE_URL + "/delete/" + id, {}, function(data){
+    console.log(data);
+  });
+}
+
+function changeBookmark(id, bookmark) {
+  console.log(JSON.stringify(bookmark));
+  $.ajax({
+    url: BASE_URL + "/change/" + id,
+    contentType: "application/json",
+    type: "POST",
+    data: JSON.stringify(bookmark),
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+function getBookmarkBy(id) {
+  console.log("QueryId:"+id);
+  $.get(BASE_URL + "/find/" + id, {}, function(data){
+    console.log(data);
+  });
+}
+
+function getAllBookmarks() {
+  $.get(BASE_URL + "/find/" + id, {}, function(data){
+    console.log(data);
+  });
+}
+
+// 获取当前选项卡
+function getCurrentTab(callback){
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+    console.log(tabs[0]);
+		callback && callback(tabs.length ? tabs[0] : null);
+	});
+}
+// 将图片转换成canvas
+function imageToCanvas(img) {
+  var canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  var ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+  return canvas;
+}
+// 根据URL获取图片，返回base64图片数据
+function getIconImage(url, callback) {
+  var img = document.createElement('img');
+  img.src = url;
+  img.onload = function(){
+    var canvas = imageToCanvas(img);
+    var imgData = canvas.toDataURL('image/png');
+    callback && callback(imgData);
+  };
+}
+
+// function sendMessageToContentScript(message, callback){
+// 	getCurrentTabId((tabId) =>{
+// 		chrome.tabs.sendMessage(tabId, message, function(response){
+// 			callback && callback(response);
+// 		});
+// 	});
 // }
 
 //Fired when a bookmark or folder is created.
 chrome.bookmarks.onCreated.addListener(function(id, bookmark){
-  pushData("add", bookmark);
+  getCurrentTab(function(tab){
+    if (tab) {
+      console.log(tab.favIconUrl);
+      getIconImage(tab.favIconUrl, function(imgData){
+        console.log(imgData);
+        bookmark.icon = imgData;
+        bookmark.iconUrl = tab.favIconUrl;
+        addBookmark(bookmark);
+      });
+    }else {
+      addBookmark(bookmark);
+    }
+  });
 });
 //Fired when a bookmark or folder is removed. When a folder is removed recursively,
 //a single notification is fired for the folder, and none for its contents.
+//example: {"index":9,"node":{"dateAdded":1584626908207,"id": "396","title": "title","url": ""},"parentId":"1"}
 chrome.bookmarks.onRemoved.addListener(function(id, bookmark){
-  pushData("delete", bookmark);
+  console.log(bookmark);
+  delBookmark(id);
 });
 //Fired when a bookmark or folder changes. Note: Currently, only title and url changes trigger this.
+//example: {"title":"","url":""}
 chrome.bookmarks.onChanged.addListener(function(id, bookmark){
-  pushData("change", bookmark);
+  console.log(bookmark);
+  changeBookmark(id, bookmark);
 });
 //Fired when a bookmark or folder is moved to a different parent folder.
+//example: {"index":8,"oldIndex":9,"oldParentId":"1","parentId":"1"}
 chrome.bookmarks.onMoved.addListener(function(id, bookmark){
-  pushData("move", bookmark);
+  console.log(id);
+  console.log(bookmark);
+  changeBookmark(id, bookmark);
 });
+

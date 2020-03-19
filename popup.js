@@ -1,5 +1,15 @@
-function pushMarks(param, callback) {
-  $.post("http://localhost:8080/push", {}, function(data){
-    callback && callback(data);
+function getLocalTree() {
+  chrome.bookmarks.getTree(function(results){
+    console.log(results);
   });
 }
+
+var bg = chrome.extension.getBackgroundPage();
+
+$(function($){
+  $("#getAll").click(function(){
+    bg.getCurrentTab(function(data){
+      console.log(data);
+    });
+  });
+});
