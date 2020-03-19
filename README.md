@@ -1,2 +1,2 @@
-# SyncBookmarks
+# BookmarksPlugin
 Synchronize bookmarks between browsers
