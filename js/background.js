@@ -1,6 +1,6 @@
 var BASE_URL = "http://localhost:8080";
 
-function addBookmark(bookmark) {
+function postToAddBookmark(bookmark) {
   console.log(JSON.stringify(bookmark));
   $.post({
     url: BASE_URL + "/add",
@@ -13,8 +13,25 @@ function addBookmark(bookmark) {
   });
 }
 
-function delBookmark(id) {
-  console.log("Del id:"+id);
+function addBookmark(id, bookmark){
+  console.log("add id:{}", id);
+  getCurrentTab(function(tab){
+    if (tab) {
+      console.log(tab.favIconUrl);
+      getIconImage(tab.favIconUrl, function(imgData){
+        console.log(imgData);
+        bookmark.icon = imgData;
+        bookmark.iconUrl = tab.favIconUrl;
+        postToAddBookmark(bookmark);
+      });
+    }else {
+      postToAddBookmark(bookmark);
+    }
+  });
+}
+
+function delBookmark(id, bookmark) {
+  console.log("Del id:{}", id);
   $.get(BASE_URL + "/delete/" + id, {}, function(data){
     console.log(data);
   });
@@ -73,6 +90,10 @@ function getIconImage(url, callback) {
   };
 }
 
+function listenToInstalled() {
+  console.log("the extension is installed");
+}
+
 // function sendMessageToContentScript(message, callback){
 // 	getCurrentTabId((tabId) =>{
 // 		chrome.tabs.sendMessage(tabId, message, function(response){
@@ -82,39 +103,16 @@ function getIconImage(url, callback) {
 // }
 
 //Fired when a bookmark or folder is created.
-chrome.bookmarks.onCreated.addListener(function(id, bookmark){
-  getCurrentTab(function(tab){
-    if (tab) {
-      console.log(tab.favIconUrl);
-      getIconImage(tab.favIconUrl, function(imgData){
-        console.log(imgData);
-        bookmark.icon = imgData;
-        bookmark.iconUrl = tab.favIconUrl;
-        addBookmark(bookmark);
-      });
-    }else {
-      addBookmark(bookmark);
-    }
-  });
-});
+chrome.bookmarks.onCreated.addListener(addBookmark);
 //Fired when a bookmark or folder is removed. When a folder is removed recursively,
 //a single notification is fired for the folder, and none for its contents.
 //example: {"index":9,"node":{"dateAdded":1584626908207,"id": "396","title": "title","url": ""},"parentId":"1"}
-chrome.bookmarks.onRemoved.addListener(function(id, bookmark){
-  console.log(bookmark);
-  delBookmark(id);
-});
+chrome.bookmarks.onRemoved.addListener(delBookmark);
 //Fired when a bookmark or folder changes. Note: Currently, only title and url changes trigger this.
 //example: {"title":"","url":""}
-chrome.bookmarks.onChanged.addListener(function(id, bookmark){
-  console.log(bookmark);
-  changeBookmark(id, bookmark);
-});
+chrome.bookmarks.onChanged.addListener(changeBookmark);
 //Fired when a bookmark or folder is moved to a different parent folder.
 //example: {"index":8,"oldIndex":9,"oldParentId":"1","parentId":"1"}
-chrome.bookmarks.onMoved.addListener(function(id, bookmark){
-  console.log(id);
-  console.log(bookmark);
-  changeBookmark(id, bookmark);
-});
+chrome.bookmarks.onMoved.addListener(changeBookmark);
 
+chrome.runtime.onInstalled.addListener(listenToInstalled);
