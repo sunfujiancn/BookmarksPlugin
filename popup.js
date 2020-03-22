@@ -7,9 +7,10 @@ function getLocalTree() {
 var bg = chrome.extension.getBackgroundPage();
 
 $(function($){
+  $("#syncBK").click(function(){
+    
+  });
   $("#getAll").click(function(){
-    bg.getCurrentTab(function(data){
-      console.log(data);
-    });
+    bg.getAllBookmarksFromLocal();
   });
 });

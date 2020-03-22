@@ -13,8 +13,13 @@ function postToAddBookmark(bookmark) {
   });
 }
 
-function addBookmark(id, bookmark){
-  console.log("add id:{}", id);
+function addBookmarkOrDirectory(id, bookmark){
+  console.log("add id:", id);
+  console.log(bookmark)
+  // dateGroupModified字段只有新增文件夹时才存在
+  if(bookmark.dateGroupModified) {
+    bookmark.isDir = true;
+  }
   getCurrentTab(function(tab){
     if (tab) {
       console.log(tab.favIconUrl);
@@ -56,10 +61,24 @@ function getBookmarkBy(id) {
     console.log(data);
   });
 }
-
-function getAllBookmarks() {
-  $.get(BASE_URL + "/find/" + id, {}, function(data){
+// 获取服务端书签列表
+function getAllBookmarksFromServer() {
+  $.get(BASE_URL + "/find/all", {}, function(data){
     console.log(data);
+  });
+}
+// 获取本地书签列表并推送到服务器
+function pushAllBookmarks(){
+  chrome.bookmarks.getTree(function(results){
+    $.ajax({
+      url: BASE_URL + "/push/all",
+      contentType: "application/json",
+      type: "POST",
+      data: JSON.stringify(results),
+      success: function(data){
+        console.log(data);
+      }
+    });
   });
 }
 

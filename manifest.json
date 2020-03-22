@@ -1,5 +1,5 @@
 {
-  "name": "SyncBookmarks",
+  "name": "BookmarksPlugin",
   "version": "0.1",
   "description": "Synchronize bookmarks between browsers",
   "manifest_version": 2,
