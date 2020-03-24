@@ -82,13 +82,7 @@ function pushAllBookmarks(){
   });
 }
 
-// 获取当前选项卡
-function getCurrentTab(callback){
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    console.log(tabs[0]);
-		callback && callback(tabs.length ? tabs[0] : null);
-	});
-}
+
 // 将图片转换成canvas
 function imageToCanvas(img) {
   var canvas = document.createElement('canvas');
@@ -100,8 +94,9 @@ function imageToCanvas(img) {
 }
 // 根据URL获取图片，返回base64图片数据
 function getIconImage(url, callback) {
+  var favIconURL = "chrome://favicon/" + url;
   var img = document.createElement('img');
-  img.src = url;
+  img.src = favIconURL;
   img.onload = function(){
     var canvas = imageToCanvas(img);
     var imgData = canvas.toDataURL('image/png');
@@ -109,20 +104,37 @@ function getIconImage(url, callback) {
   };
 }
 
+function getAllIcons(list) {
+  $.each(list, function(i, e){
+    if(!e.children) { // 书签
+      getIconImage(e.url, function(imgData){
+        e.icon = imgData;
+      });
+    }else {// 文件夹
+      getAllIcons(e.children);
+    }
+  });
+  return list;
+}
+
+function getAllBookmarks(callback) {
+  chrome.bookmarks.getTree(function(results){
+    var list = getAllIcons(results);
+    callback && callback(list);
+  });
+}
+
 function listenToInstalled() {
   console.log("the extension is installed");
 }
 
-// function sendMessageToContentScript(message, callback){
-// 	getCurrentTabId((tabId) =>{
-// 		chrome.tabs.sendMessage(tabId, message, function(response){
-// 			callback && callback(response);
-// 		});
-// 	});
-// }
+function listenToCompleted(details) {
+  console.log("the brower is completed");
+}
+
 
 //Fired when a bookmark or folder is created.
-chrome.bookmarks.onCreated.addListener(addBookmark);
+chrome.bookmarks.onCreated.addListener(addBookmarkOrDirectory);
 //Fired when a bookmark or folder is removed. When a folder is removed recursively,
 //a single notification is fired for the folder, and none for its contents.
 //example: {"index":9,"node":{"dateAdded":1584626908207,"id": "396","title": "title","url": ""},"parentId":"1"}
@@ -135,3 +147,5 @@ chrome.bookmarks.onChanged.addListener(changeBookmark);
 chrome.bookmarks.onMoved.addListener(changeBookmark);
 
 chrome.runtime.onInstalled.addListener(listenToInstalled);
+
+chrome.webNavigation.onCompleted.addListener(listenToCompleted);

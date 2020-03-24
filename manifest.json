@@ -12,6 +12,8 @@
   "permissions": [
     "tabs",
     "bookmarks",
+    "webNavigation",
+    "chrome://favicon/",
     "https://*/*"
   ],
   "background": {
